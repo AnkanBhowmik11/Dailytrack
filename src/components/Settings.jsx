@@ -99,6 +99,11 @@ export default function Settings() {
     }
   }, [settings]);
 
+  const session = getCurrentSession();
+  const currentUserEmail = session?.user?.email;
+  const isOwner = currentUserEmail === OWNER_EMAIL;
+  const isAdmin = isOwner || teamMembers.find(m => m.email === currentUserEmail)?.accessLevel === 'admin';
+
   const showToast = (type, text) => {
     setToast({ type, text });
     setTimeout(() => setToast(null), 4000);
@@ -160,6 +165,21 @@ export default function Settings() {
 
   const handleRemoveMember = async (email) => {
     if (!window.confirm(`Remove ${email} from team?`)) return;
+
+    try {
+      const API_URL = window.location.hostname === 'localhost' ? '' : 'https://dailytrack-online.vercel.app';
+      const res = await fetch(`${API_URL}/api/deleteUser`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      if (!res.ok) {
+        console.warn('Could not delete from Supabase Auth:', await res.text());
+      }
+    } catch (e) {
+      console.warn('Cloud delete failed, operating offline?', e);
+    }
+
     const updated = teamMembers.filter(m => m.email !== email);
     setTeamMembers(updated);
     await db.companySettings.update('main', { teamMembers: updated });
@@ -285,6 +305,7 @@ export default function Settings() {
       <div style={{ marginTop: 16 }} className="settings-sections">
 
         {/* Team Access */}
+        {isAdmin && (
         <Section id="access" title="Team Access" icon={KeyRound} bg="linear-gradient(135deg,#4f46e5,#7c3aed)" expandedSection={expandedSection} setExpandedSection={setExpandedSection}>
           <div className="form-block">
 
@@ -331,13 +352,16 @@ export default function Settings() {
                       border: `1px solid ${isAdmin ? 'rgba(79,70,229,0.2)' : 'rgba(5,150,105,0.2)'}`,
                       padding: '3px 9px', borderRadius: 99, flexShrink: 0,
                     }}>{isAdmin ? 'Admin' : 'Attendance'}</span>
-                    <button type="button" className="btn btn--icon btn--danger" style={{ width: 28, height: 28, borderRadius: 7, flexShrink: 0 }} onClick={() => handleRemoveMember(m.email)} title="Remove">✕</button>
+                    {isOwner && (
+                      <button type="button" className="btn btn--icon btn--danger" style={{ width: 28, height: 28, borderRadius: 7, flexShrink: 0 }} onClick={() => handleRemoveMember(m.email)} title="Remove">✕</button>
+                    )}
                   </div>
                 );
               })}
             </div>
 
             {/* ── Add member ── */}
+            {isOwner && (
             <div style={{ background: 'var(--card-2)', border: '1px solid var(--border)', borderRadius: 11, padding: 14 }}>
 
               {/* Role toggle */}
@@ -424,9 +448,11 @@ export default function Settings() {
                 </div>
               )}
             </div>
+            )}
 
           </div>
         </Section>
+        )}
 
 
 
