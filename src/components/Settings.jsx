@@ -397,7 +397,7 @@ export default function Settings() {
                   
                   <a
                     className="btn btn--primary btn--sm"
-                    href={`mailto:${inviteResult.email}?subject=Your DailyTrack Login Details&body=Hello,%0D%0A%0D%0AYou have been invited to DailyTrack.%0D%0A%0D%0ALogin Email: ${inviteResult.email}%0D%0APassword: ${inviteResult.pwd}%0D%0ARole: ${inviteResult.role === 'admin' ? 'Admin' : 'Attendance Only'}%0D%0A%0D%0APlease log in to access the dashboard.`}
+                    href={`mailto:${inviteResult.email}?subject=Your DailyTrack Login Details&body=Hello,%0D%0A%0D%0AYou have been invited to DailyTrack.%0D%0A%0D%0ALogin Link: ${window.location.origin}%0D%0ALogin Email: ${inviteResult.email}%0D%0APassword: ${inviteResult.pwd}%0D%0ARole: ${inviteResult.role === 'admin' ? 'Admin' : 'Attendance Only'}%0D%0A%0D%0APlease click the login link above and sign in with your credentials.`}
                     style={{ textDecoration: 'none', display: 'flex', justifyContent: 'center' }}
                   >
                     Send via Email App
