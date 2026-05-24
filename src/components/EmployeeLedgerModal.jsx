@@ -19,7 +19,7 @@ function initials(name) {
   return name ? name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?';
 }
 
-export default function EmployeeLedgerModal({ employee, sites, onClose }) {
+export default function EmployeeLedgerModal({ employee, sites, payrollRow, onClose }) {
   const transactions = useLiveQuery(
     () => db.transactions.where('employeeId').equals(employee.id).sortBy('date'),
     [employee.id]
@@ -96,7 +96,17 @@ export default function EmployeeLedgerModal({ employee, sites, onClose }) {
 
           {/* ── Summary cards ── */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-            {[
+            {(payrollRow ? [
+              { label: 'Wages Earned', val: payrollRow.gross,      sub: 'Base + OT',          color: 'var(--c-info)',    Icon: Wallet },
+              { label: 'Total Paid',   val: payrollRow.totalPaid,  sub: 'This month',         color: 'var(--c-success)', Icon: TrendingUp },
+              {
+                label: 'Balance Due',  val: payrollRow.dueBalance,
+                sub: payrollRow.dueBalance > 0 ? 'To Pay' : payrollRow.dueBalance < 0 ? 'Overpaid' : 'Cleared',
+                color: payrollRow.dueBalance > 0 ? 'var(--c-danger)' : 'var(--c-success)',
+                Icon: IndianRupee,
+                border: payrollRow.dueBalance > 0
+              },
+            ] : [
               { label: 'Total Paid', val: totalPaid,    sub: 'Salary + Bonus',   color: 'var(--c-success)', Icon: TrendingUp  },
               { label: 'Advances',  val: totalAdvances, sub: `Repaid ₹${totalRepay.toLocaleString('en-IN')}`, color: 'var(--c-warning)', Icon: TrendingDown },
               {
@@ -106,7 +116,7 @@ export default function EmployeeLedgerModal({ employee, sites, onClose }) {
                 Icon: RefreshCcw,
                 border: outstanding > 0
               },
-            ].map(({ label, val, sub, color, Icon: CardIcon, border }) => (
+            ]).map(({ label, val, sub, color, Icon: CardIcon, border }) => (
               <div
                 key={label}
                 style={{

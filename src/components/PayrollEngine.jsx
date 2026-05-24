@@ -4,6 +4,7 @@ import { db } from '../db';
 import { Download, Printer, FileText, Calendar, Check, AlertCircle, Plus, Search, Trash2, X } from 'lucide-react';
 import EmployeeLedgerModal from './EmployeeLedgerModal';
 import { generatePayrollPDF } from '../utils/generatePayrollPDF';
+import { generateLedgerPDF } from '../utils/generateLedgerPDF';
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
@@ -17,6 +18,8 @@ export default function PayrollEngine() {
   const [activeSlip,     setActiveSlip]     = useState(null);
   const [search, setSearch]           = useState('');
   const [paymentModalRow, setPaymentModalRow] = useState(null);
+  const [reportModalRow, setReportModalRow] = useState(null);
+  const [ledgerTimeframe, setLedgerTimeframe] = useState('1');
 
   useEffect(() => {
     if (sites?.length && !selectedSiteId) setSelectedSiteId(String(sites[0].id));
@@ -170,7 +173,7 @@ export default function PayrollEngine() {
                 {row.ot>0&&<span className="badge badge--primary">{row.ot}h OT</span>}
               </div>
             </div>
-            <button className="btn btn--sm btn--secondary no-print" onClick={()=>setActiveSlip(row)} title="Salary slip" style={{ padding: '8px', flexShrink: 0 }}>
+            <button className="btn btn--sm btn--secondary no-print" onClick={()=>setReportModalRow(row)} title="Generate Report" style={{ padding: '8px', flexShrink: 0 }}>
               <FileText size={14}/>
             </button>
           </div>
@@ -306,9 +309,56 @@ export default function PayrollEngine() {
       {paymentModalRow && (
         <EmployeeLedgerModal
           employee={paymentModalRow.employee}
+          payrollRow={paymentModalRow}
           sites={sites}
           onClose={() => setPaymentModalRow(null)}
         />
+      )}
+      {/* Report Options Modal */}
+      {reportModalRow && (
+        <div className="modal-overlay no-print" onClick={()=>setReportModalRow(null)}>
+          <div className="modal-sheet" style={{maxWidth:'400px', padding: 20}} onClick={e=>e.stopPropagation()}>
+            <div className="modal-header" style={{borderBottom:'none', paddingBottom: 0}}>
+              <span className="modal-title" style={{fontSize: '1.2rem'}}>Generate Report</span>
+              <button className="modal-close" onClick={()=>setReportModalRow(null)}>✕</button>
+            </div>
+            <div style={{marginTop: 6, marginBottom: 20, fontSize: '0.85rem', color: 'var(--t-2)'}}>
+              For {reportModalRow.employee.name}
+            </div>
+
+            <div style={{display: 'flex', flexDirection: 'column', gap: 12}}>
+              <div style={{background: 'var(--card-1)', padding: 12, borderRadius: 8, border: '1px solid var(--border)'}}>
+                <h4 style={{margin: '0 0 6px 0', fontSize: '0.95rem'}}>Salary Slip (1 Month)</h4>
+                <p style={{margin: '0 0 10px 0', fontSize: '0.8rem', color: 'var(--t-2)'}}>View and print a standard salary slip for the selected month.</p>
+                <button className="btn btn--secondary" style={{width: '100%'}} onClick={() => {
+                  setActiveSlip(reportModalRow);
+                  setReportModalRow(null);
+                }}>
+                  <FileText size={16} /> Open Salary Slip
+                </button>
+              </div>
+
+              <div style={{background: 'var(--card-1)', padding: 12, borderRadius: 8, border: '1px solid var(--border)'}}>
+                <h4 style={{margin: '0 0 6px 0', fontSize: '0.95rem'}}>Comprehensive Ledger</h4>
+                <p style={{margin: '0 0 10px 0', fontSize: '0.8rem', color: 'var(--t-2)'}}>Download a detailed PDF with all attendance and transactions.</p>
+                
+                <select className="select" style={{width: '100%', marginBottom: 10}} value={ledgerTimeframe} onChange={e=>setLedgerTimeframe(e.target.value)}>
+                  <option value="1">Last 1 Month</option>
+                  <option value="6">Last 6 Months</option>
+                  <option value="12">Last 12 Months</option>
+                  <option value="all">All Time</option>
+                </select>
+
+                <button className="btn btn--primary" style={{width: '100%'}} onClick={async () => {
+                  await generateLedgerPDF(reportModalRow.employee, siteName, settings, ledgerTimeframe);
+                  setReportModalRow(null);
+                }}>
+                  <Download size={16} /> Download PDF Ledger
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
