@@ -428,14 +428,14 @@ export default function Settings() {
                     <button
                       className="btn btn--secondary btn--sm"
                       style={{ flex: 1 }}
-                      onClick={() => copyToClipboard(`Login Link: ${window.location.origin}\nEmail: ${inviteResult.email}\nPassword: ${inviteResult.pwd}\nRole: ${inviteResult.role === 'admin' ? 'Admin' : 'Attendance Only'}`)}
+                      onClick={() => copyToClipboard(`Login Link: https://dailytrack-online.vercel.app\nEmail: ${inviteResult.email}\nPassword: ${inviteResult.pwd}\nRole: ${inviteResult.role === 'admin' ? 'Admin' : 'Attendance Only'}`)}
                     >
                       {copied ? 'Copied!' : 'Copy Details'}
                     </button>
                     
                     <a
                       className="btn btn--primary btn--sm"
-                      href={`mailto:${inviteResult.email}?subject=Your DailyTrack Login Details&body=Hello,%0D%0A%0D%0AYou have been invited to DailyTrack.%0D%0A%0D%0ALogin Link: ${window.location.origin}%0D%0ALogin Email: ${inviteResult.email}%0D%0APassword: ${inviteResult.pwd}%0D%0ARole: ${inviteResult.role === 'admin' ? 'Admin' : 'Attendance Only'}%0D%0A%0D%0APlease click the login link above and sign in with your credentials.`}
+                      href={`mailto:${inviteResult.email}?subject=Your DailyTrack Login Details&body=Hello,%0D%0A%0D%0AYou have been invited to DailyTrack.%0D%0A%0D%0ALogin Link: https://dailytrack-online.vercel.app%0D%0ALogin Email: ${inviteResult.email}%0D%0APassword: ${inviteResult.pwd}%0D%0ARole: ${inviteResult.role === 'admin' ? 'Admin' : 'Attendance Only'}%0D%0A%0D%0APlease click the login link above and sign in with your credentials.`}
                       style={{ textDecoration: 'none', display: 'flex', justifyContent: 'center', flex: 1 }}
                     >
                       Email App
