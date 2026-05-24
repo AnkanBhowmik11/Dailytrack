@@ -392,16 +392,31 @@ export default function Settings() {
                     Account Created for {inviteResult.email}
                   </div>
                   <div style={{ fontSize: '0.78rem', color: 'var(--t-2)', marginBottom: 8, lineHeight: 1.5 }}>
-                    The account is ready. Send their login password securely using your email app:
+                    The account is ready. Here are their login details. Please copy and share them securely:
                   </div>
-                  
-                  <a
-                    className="btn btn--primary btn--sm"
-                    href={`mailto:${inviteResult.email}?subject=Your DailyTrack Login Details&body=Hello,%0D%0A%0D%0AYou have been invited to DailyTrack.%0D%0A%0D%0ALogin Link: ${window.location.origin}%0D%0ALogin Email: ${inviteResult.email}%0D%0APassword: ${inviteResult.pwd}%0D%0ARole: ${inviteResult.role === 'admin' ? 'Admin' : 'Attendance Only'}%0D%0A%0D%0APlease click the login link above and sign in with your credentials.`}
-                    style={{ textDecoration: 'none', display: 'flex', justifyContent: 'center' }}
-                  >
-                    Send via Email App
-                  </a>
+
+                  <div style={{ background: 'var(--card-1)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', marginBottom: '10px' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--t-2)', marginBottom: '4px' }}><strong>Email:</strong> {inviteResult.email}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--t-2)' }}><strong>Password:</strong> <span style={{ fontFamily: 'monospace', fontSize: '0.8rem', background: 'var(--bg-secondary)', padding: '2px 4px', borderRadius: '4px', border: '1px solid var(--border)' }}>{inviteResult.pwd}</span></div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      className="btn btn--secondary btn--sm"
+                      style={{ flex: 1 }}
+                      onClick={() => copyToClipboard(`Login Link: ${window.location.origin}\nEmail: ${inviteResult.email}\nPassword: ${inviteResult.pwd}\nRole: ${inviteResult.role === 'admin' ? 'Admin' : 'Attendance Only'}`)}
+                    >
+                      {copied ? 'Copied!' : 'Copy Details'}
+                    </button>
+                    
+                    <a
+                      className="btn btn--primary btn--sm"
+                      href={`mailto:${inviteResult.email}?subject=Your DailyTrack Login Details&body=Hello,%0D%0A%0D%0AYou have been invited to DailyTrack.%0D%0A%0D%0ALogin Link: ${window.location.origin}%0D%0ALogin Email: ${inviteResult.email}%0D%0APassword: ${inviteResult.pwd}%0D%0ARole: ${inviteResult.role === 'admin' ? 'Admin' : 'Attendance Only'}%0D%0A%0D%0APlease click the login link above and sign in with your credentials.`}
+                      style={{ textDecoration: 'none', display: 'flex', justifyContent: 'center', flex: 1 }}
+                    >
+                      Email App
+                    </a>
+                  </div>
                   
                   <div style={{ fontSize: '0.69rem', color: 'var(--t-3)', marginTop: 10, textAlign: 'center' }}>
                     Role: <strong style={{ color: inviteResult.role === 'admin' ? '#4f46e5' : '#059669' }}>{inviteResult.role === 'admin' ? 'Admin' : 'Attendance Only'}</strong>
