@@ -228,7 +228,11 @@ const NAV_ITEMS = [
 export default function App() {
   const settings = useLiveQuery(() => db.companySettings.get('main'));
   const [session, setSession]         = useState(getCurrentSession());
-  const [activeTab, setActiveTab]     = useState('attendance');
+  const [activeTab, setActiveTab]     = useState(() => localStorage.getItem('dt_activeTab') || 'attendance');
+
+  useEffect(() => {
+    localStorage.setItem('dt_activeTab', activeTab);
+  }, [activeTab]);
   const [syncing, setSyncing]         = useState(false);
   const [syncStatus, setSyncStatus]   = useState('Synced');
   const [showAccount, setShowAccount] = useState(false);
