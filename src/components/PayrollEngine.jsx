@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db';
-import { Download, Printer, FileText, Calendar, Check, AlertCircle, Plus, Search, Trash2, X } from 'lucide-react';
+import { Download, Printer, FileText, Calendar, Check, AlertCircle, Plus, Search, Trash2, X, Share2 } from 'lucide-react';
 import EmployeeLedgerModal from './EmployeeLedgerModal';
 import { generatePayrollPDF } from '../utils/generatePayrollPDF';
 import { generateLedgerPDF } from '../utils/generateLedgerPDF';
@@ -24,6 +24,42 @@ export default function PayrollEngine() {
   useEffect(() => {
     if (sites?.length && !selectedSiteId) setSelectedSiteId(String(sites[0].id));
   }, [sites]);
+
+  useEffect(() => {
+    if (activeSlip) document.body.classList.add('printing-slip');
+    else document.body.classList.remove('printing-slip');
+    return () => document.body.classList.remove('printing-slip');
+  }, [activeSlip]);
+
+  const handleShareSlip = async () => {
+    try {
+      const el = document.getElementById('salary-slip-view');
+      if (!el) return;
+      const html2canvas = (await import('html2canvas')).default;
+      const canvas = await html2canvas(el, { scale: 2 });
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+        const file = new File([blob], `SalarySlip_${activeSlip.employee.name.replace(/\s+/g,'_')}.png`, { type: 'image/png' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: 'Salary Slip',
+            text: `Salary Slip for ${activeSlip.employee.name}`,
+            files: [file]
+          });
+        } else {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = file.name;
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+      });
+    } catch (err) {
+      console.error(err);
+      alert('Failed to share slip.');
+    }
+  };
 
   const employees = useLiveQuery(() => {
     if (!selectedSiteId) return Promise.resolve([]);
@@ -203,7 +239,7 @@ export default function PayrollEngine() {
 
       {/* Salary Slip Modal */}
       {activeSlip&&(
-        <div className="modal-overlay no-print" onClick={()=>setActiveSlip(null)}>
+        <div className="modal-overlay" onClick={()=>setActiveSlip(null)}>
           <div className="modal-sheet" style={{maxWidth:'580px',background:'#f8fafc',color:'#1e293b'}} onClick={e=>e.stopPropagation()}>
             <div className="modal-header" style={{borderBottom:'1px solid #cbd5e1'}}>
               <span className="modal-title" style={{color:'#0f172a'}}>Salary Slip</span>
@@ -297,8 +333,9 @@ export default function PayrollEngine() {
               </div>
             </div>
 
-            <div className="modal-footer">
+            <div className="modal-footer no-print">
               <button className="btn btn--secondary" onClick={()=>setActiveSlip(null)}>Close</button>
+              <button className="btn btn--primary" onClick={handleShareSlip}><Share2 size={15}/> Share</button>
               <button className="btn btn--primary" onClick={()=>window.print()}><Printer size={15}/> Print</button>
             </div>
           </div>
