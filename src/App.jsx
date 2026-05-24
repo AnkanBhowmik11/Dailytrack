@@ -46,7 +46,39 @@ function AccountModal({ session, settings, onClose, onLogout }) {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onloadend = () => setEditAvatar(reader.result);
+    reader.onloadend = () => {
+      const img = new Image();
+      img.onload = () => {
+        // Compress and resize using canvas
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 200;
+        const MAX_HEIGHT = 200;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Output compressed JPEG at 0.7 quality to keep IndexedDB footprint small
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        setEditAvatar(compressedDataUrl);
+      };
+      img.src = reader.result;
+    };
     reader.readAsDataURL(file);
   };
 
@@ -99,9 +131,9 @@ function AccountModal({ session, settings, onClose, onLogout }) {
                   ) : (
                     <div style={{ width: 64, height: 64, borderRadius: 20, background: 'linear-gradient(135deg,#4f46e5,#7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '1.4rem', fontWeight: 800 }}>{editName.slice(0, 2).toUpperCase()}</div>
                   )}
-                  <label style={{ position: 'absolute', bottom: -5, right: -5, background: 'var(--card-1)', border: '1px solid var(--border)', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
+                  <label htmlFor="avatar-upload-input" style={{ position: 'absolute', bottom: -5, right: -5, background: 'var(--card-1)', border: '1px solid var(--border)', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
                     <Camera size={13} className="text-primary" />
-                    <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatarUpload} />
+                    <input id="avatar-upload-input" type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatarUpload} />
                   </label>
                 </div>
                 <input className="input" value={editName} onChange={e => setEditName(e.target.value)} placeholder="Your Name" style={{ textAlign: 'center', fontWeight: 700 }} />
@@ -288,8 +320,25 @@ export default function App() {
             onClick={() => setShowAccount(true)}
             title="Account"
             id="account-btn"
+            style={{ 
+              padding: 0, 
+              width: 32, 
+              height: 32, 
+              borderRadius: '50%', 
+              overflow: 'hidden', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              border: settings?.userAvatar ? '2px solid var(--c-primary)' : '1px solid var(--border)',
+              background: 'var(--bg-secondary)',
+              cursor: 'pointer'
+            }}
           >
-            <CircleUser size={20} />
+            {settings?.userAvatar ? (
+              <img src={settings.userAvatar} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <CircleUser size={20} />
+            )}
           </button>
         </div>
       </header>

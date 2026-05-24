@@ -110,7 +110,9 @@ export default function Settings() {
   const handleSave = async (e) => {
     e.preventDefault();
     try {
+      const currentSettings = await db.companySettings.get('main') || {};
       await db.companySettings.put({
+        ...currentSettings,
         id: 'main', name, address, gstin,
         defaultOtRate: Number(defaultOtRate),
         defaultGstRate: Number(defaultGstRate),
